@@ -23,19 +23,9 @@ if __name__ == "__main__":
 
   def cb(element, notificationName, info):
     print("%s %s" % (notificationName, elementToString(element)))
-    # parent = getAttributeValue(element, "AXParent")
-    # print("parent %s" % elementToString(parent))
-    # pprint(pythonifyValue(info))
-    # print("++++ %s" % elementToString(info["AXTextChangeElement"]));
-    # print
-    selRange = getAttributeValue(element, "AXSelectedTextMarkerRange")
-    length = getParameterizedAttributeValue(element, "AXLengthForTextMarkerRange", selRange)
-    string = getParameterizedAttributeValue(element, "AXStringForTextMarkerRange", selRange)
-    print("[%s] %s" % (length, string))
-
-    # selRange = getAttributeValue(element, "AXSelectedTextMarkerRange")
-    # length = getParameterizedAttributeValue(webArea, "AXLengthForTextMarkerRange", selRange)
-    # string = getParameterizedAttributeValue(webArea, "AXStringForTextMarkerRange", selRange)
-    # print("webArea: [%s] %s" % (length, string))
+    if notificationName == "AXSelectedTextChanged":
+      selRange = info["AXSelectedTextMarkerRange"]
+      string = getParameterizedAttributeValue(element, "AXStringForTextMarkerRange", selRange)
+      print("'%s'" % string)
 
   observeNotifications(root, options.event or kEvents, cb)

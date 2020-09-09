@@ -6,6 +6,7 @@ from ApplicationServices import (AXObserverAddNotification, AXObserverCreateWith
                                  AXUIElementCopyAttributeNames,
                                  AXUIElementCopyParameterizedAttributeNames,
                                  AXUIElementCopyAttributeValue,
+                                 AXUIElementIsAttributeSettable,
                                  AXUIElementCopyParameterizedAttributeValue,
                                  AXUIElementCreateApplication, AXValueGetType,
                                  AXValueRef, kAXValueCFRangeType,
@@ -62,8 +63,15 @@ def getRootElement(pid=0, name=""):
       return AXUIElementCreateApplication(p)
 
 def getAttributeNames(elem):
-  err, attr = AXUIElementCopyAttributeNames(elem, None)
-  return list(attr)
+  err, _attr = AXUIElementCopyAttributeNames(elem, None)
+  attr = []
+  for attribute in _attr:
+    err, settable = AXUIElementIsAttributeSettable(elem, attribute, None)
+    if settable:
+      attr.append(attribute + "*")
+    else:
+      attr.append(attribute)
+  return attr
 
 def getParameterizedAttributeNames(elem):
   err, attr = AXUIElementCopyParameterizedAttributeNames(elem, None)
@@ -104,7 +112,7 @@ def findElem(elem, filter):
     return elem
   children = getAttributeValue(elem, "AXChildren") or []
   for child in children:
-    match = findWebArea(child)
+    match = findElem(child, filter)
     if match:
       return match
 
