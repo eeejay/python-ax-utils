@@ -132,7 +132,7 @@ def findElemWithDOMIdentifier(elem, identifier):
 
   return None
 
-def elementToString(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False):
+def elementToString(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, cb=None):
   # return elem
 
   roleDesc = getAttributeValue(elem, "AXRoleDescription") or "unknown"
@@ -142,6 +142,8 @@ def elementToString(elem, attributes=kBasicAttributes, actions=False, list_attri
     ret += " %s" % repr(getAttributeNames(elem))
   if list_param_attributes:
     ret += " %s" % repr(getParameterizedAttributeNames(elem))
+  if cb:
+    ret += " %s" % cb(elem)
   return ret
 
 def elementPID(elem):
@@ -150,8 +152,8 @@ def elementPID(elem):
   except:
     return 0
 
-def dumpTree(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, indent=0):
-  print("%s%s" % (indent * " ", elementToString(elem, attributes, actions, list_attributes, list_param_attributes)))
+def dumpTree(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, indent=0, cb=None):
+  print("%s%s" % (indent * " ", elementToString(elem, attributes, actions, list_attributes, list_param_attributes, cb)))
   children = getAttributeValue(elem, "AXChildren") or []
   for child in children:
     dumpTree(child, attributes, actions, list_attributes, list_param_attributes, indent + 1)
