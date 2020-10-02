@@ -25,11 +25,11 @@ if __name__ == "__main__":
   root = findElem(getRootElement(name=options.app),
     filter)
 
-  print(root)
+  # print(root)
   endMarker = getAttributeValue(root, "AXEndTextMarker")
   nextMarker = getAttributeValue(root, "AXStartTextMarker")
   startMarker = nextMarker
-  print(nextMarker)
+  # print(nextMarker)
 
   # markers = NSArray.alloc().initWithObjects_(nextMarker, endMarker)
   # r = getParameterizedAttributeValue(root, "AXTextMarkerRangeForUnorderedTextMarkers", markers)
@@ -37,24 +37,13 @@ if __name__ == "__main__":
 
   # nextMarker = getMarker(880)
   i = 0
+  # nextMarker = getParameterizedAttributeValue(root, "AXNextTextMarkerForTextMarker", nextMarker)
+
   while nextMarker:
+    # elem = getParameterizedAttributeValue(root, "AXUIElementForTextMarker", nextMarker)
     leftWord = strFromRange(getParameterizedAttributeValue(root, "AXLeftWordTextMarkerRangeForTextMarker", nextMarker))
     rightWord = strFromRange(getParameterizedAttributeValue(root, "AXRightWordTextMarkerRangeForTextMarker", nextMarker))
-    markerIndex = getParameterizedAttributeValue(root, "AXIndexForTextMarker", nextMarker)
-    fromStart = getRange(startMarker, nextMarker)
-    lengthFromStart = getParameterizedAttributeValue(root, "AXLengthForTextMarkerRange", fromStart)
-    print("===========\n%d markerIndex=%d lengthFromStart=%d" %
-      (i, markerIndex, lengthFromStart))
-    print("\t[%s] [%s]" % (leftWord, rightWord))
-    elem = getParameterizedAttributeValue(root, "AXUIElementForTextMarker", nextMarker)
-    print("\t%s" % elementToString(elem))
-    # elemRange = getParameterizedAttributeValue(root, "AXTextMarkerRangeForUIElement", elem)
-    # desc = getParameterizedAttributeValue(root, "AXMozDescriptionForMarkerOrRange", elemRange)
-    # print("\trange: %s" % desc)
-    # # print("\t'%s'" % strFromRange(elemRange))
-    # desc = getParameterizedAttributeValue(root, "AXMozDescriptionForMarkerOrRange", nextMarker)
-    # print("\tmarker: %s" % desc)
+
+    print([leftWord, rightWord])
+
     nextMarker = getParameterizedAttributeValue(root, "AXNextTextMarkerForTextMarker", nextMarker)
-    i += 1
-    if i > 73:
-      break

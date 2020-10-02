@@ -6,7 +6,7 @@ from pprint import pprint
 import json
 import re
 
-COL_LIMIT = 100
+COL_LIMIT = 80
 
 def strFromRange(r):
   return getParameterizedAttributeValue(root, "AXStringForTextMarkerRange", r)
@@ -16,16 +16,16 @@ def getMarker(index):
 
 def dictToJS(obj):
   data = []
-  indent = 2;
+  indent = 8;
   for e in obj:
     d = []
     for key, value in e.items():
       itemstr = "%s: %s" % (key, json.dumps(value))
       if len(itemstr) > COL_LIMIT:
-        elems = (",\n%s" % (" "*(indent*2 + len("%s: [" % key)))).join([json.dumps(elem) for elem in value])
+        elems = (",\n%s" % (" "*(indent + 2 + len("%s: [" % key)))).join([json.dumps(elem) for elem in value])
         itemstr = "%s: [%s]" % (key, elems)
       d.append(itemstr)
-    data.append("%s{ %s }" % (" "*indent, (",\n%s" % (" "*indent*2)).join(d)))
+    data.append("%s{ %s }" % (" "*indent, (",\n%s" % (" "*(indent + 2))).join(d)))
   return "[\n%s]" % ",\n".join(data)
 
 def getRange(m1, m2):
@@ -63,12 +63,16 @@ if __name__ == "__main__":
     elem = getParameterizedAttributeValue(root, "AXUIElementForTextMarker", nextMarker)
     d = {}
     d["words"] = [leftWord, rightWord]
-    d["element"] = [getAttributeValue(elem, "AXRole"), getAttributeValue(elem, "AXValue")]
+    d["element"] = [
+      getAttributeValue(elem, "AXRole"),
+      getAttributeValue(elem, "AXValue")]
     d["lines"] = [
       strFromRange(getParameterizedAttributeValue(root, "AXLineTextMarkerRangeForTextMarker", nextMarker)),
       strFromRange(getParameterizedAttributeValue(root, "AXLeftLineTextMarkerRangeForTextMarker", nextMarker)),
       strFromRange(getParameterizedAttributeValue(root, "AXRightLineTextMarkerRangeForTextMarker", nextMarker))
     ]
+    d["paragraph"] = strFromRange(getParameterizedAttributeValue(root, "AXParagraphTextMarkerRangeForTextMarker", nextMarker))
+    d["style"] = strFromRange(getParameterizedAttributeValue(root, "AXStyleTextMarkerRangeForTextMarker", nextMarker))
     expected.append(d)
 
     nextMarker = getParameterizedAttributeValue(root, "AXNextTextMarkerForTextMarker", nextMarker)
