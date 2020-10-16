@@ -9,6 +9,7 @@ from ApplicationServices import (AXObserverAddNotification, AXObserverCreateWith
                                  AXUIElementIsAttributeSettable,
                                  AXUIElementCopyParameterizedAttributeValue,
                                  AXUIElementCreateApplication, AXValueGetType,
+                                 AXUIElementCopyActionNames,
                                  AXValueRef, kAXValueCFRangeType,
                                  kAXValueCGPointType, kAXValueCGRectType,
                                  kAXValueCGSizeType)
@@ -80,6 +81,14 @@ def getParameterizedAttributeNames(elem):
 def getAttributeValue(elem, attribute):
   err, attrValue = AXUIElementCopyAttributeValue(elem, attribute, None)
   return attrValue
+
+def isAttributeSettable(elem, attribute):
+  err, result = AXUIElementIsAttributeSettable(elem, attribute, None)
+  return bool(result)
+
+def getActions(elem):
+  err, result = AXUIElementCopyActionNames(elem, None)
+  return result
 
 def getParameterizedAttributeValue(elem, attribute, parameter):
   err, attrValue = AXUIElementCopyParameterizedAttributeValue(elem, attribute, parameter, None)
@@ -183,12 +192,23 @@ def createCallback(callback):
     callback(element, notificationName, info)
   return cb
 
-def observeNotifications(elem, notificationNames, callback):
+def observeNotifications(elem, notificationNames, callback, reactor=None):
   pid = elementPID(elem)
+
   err, observer = AXObserverCreateWithInfoCallback(pid, createCallback(callback), None)
   source = AXObserverGetRunLoopSource(observer)
-  CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopCommonModes)
+
+  if reactor:
+    CFRunLoopAddSource(reactor._cfrunloop, source, kCFRunLoopCommonModes)
+  else:
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopCommonModes)
+
   for name in notificationNames:
     AXObserverAddNotification(observer, elem, name, None)
-  handle_signals()
-  CFRunLoopRun()
+
+  if reactor:
+    reactor.run()
+  else:
+    handle_signals()
+    CFRunLoopRun()
+
