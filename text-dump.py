@@ -1,9 +1,13 @@
 from common import getRootElement, findElem, elementToString, \
   getAttributeValue, getParameterizedAttributeValue, \
-  findElemWithDOMIdentifier
+  findElemWithDOMIdentifier, setAttributeValue
 from Foundation import NSDictionary, NSArray
 
+root = None
+
 def strFromRange(r):
+  if (not r):
+    return ""
   return getParameterizedAttributeValue(root, "AXStringForTextMarkerRange", r).encode('utf-8')
 
 def getMarker(index):
@@ -25,25 +29,16 @@ if __name__ == "__main__":
   root = findElem(getRootElement(name=options.app),
     filter)
 
-  # print(root)
-  endMarker = getAttributeValue(root, "AXEndTextMarker")
-  nextMarker = getAttributeValue(root, "AXStartTextMarker")
-  startMarker = nextMarker
-  # print(nextMarker)
+  r = getAttributeValue(root, "AXSelectedTextMarkerRange");
+  print(strFromRange(r))
 
-  # markers = NSArray.alloc().initWithObjects_(nextMarker, endMarker)
-  # r = getParameterizedAttributeValue(root, "AXTextMarkerRangeForUnorderedTextMarkers", markers)
-  # print(strFromRange(r))
+  # root = findElem(getRootElement(name=options.app),
+  #   lambda elem: getAttributeValue(elem, "AXDOMIdentifier") == "t")
 
-  # nextMarker = getMarker(880)
-  i = 0
-  # nextMarker = getParameterizedAttributeValue(root, "AXNextTextMarkerForTextMarker", nextMarker)
+  # print(getAttributeValue(root, "AXSelectedText"))
+  # setAttributeValue(root, "AXValue", "olam")
+  # print(getAttributeValue(root, "AXSelectedText"))
 
-  while nextMarker:
-    # elem = getParameterizedAttributeValue(root, "AXUIElementForTextMarker", nextMarker)
-    leftWord = strFromRange(getParameterizedAttributeValue(root, "AXLeftWordTextMarkerRangeForTextMarker", nextMarker))
-    rightWord = strFromRange(getParameterizedAttributeValue(root, "AXRightWordTextMarkerRangeForTextMarker", nextMarker))
-
-    print([leftWord, rightWord])
-
-    nextMarker = getParameterizedAttributeValue(root, "AXNextTextMarkerForTextMarker", nextMarker)
+  # # setAttributeValue(root, "AXValue", "WUUT")
+  # print(getParameterizedAttributeValue(root, "AXRangeForLine", 1))
+  # print(getAttributeValue(root, "AXVisibleCharacterRange"))

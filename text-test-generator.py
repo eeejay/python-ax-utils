@@ -65,7 +65,8 @@ if __name__ == "__main__":
     d["words"] = [leftWord, rightWord]
     d["element"] = [
       getAttributeValue(elem, "AXRole"),
-      getAttributeValue(elem, "AXValue")]
+      getAttributeValue(elem, "AXValue"),
+      strFromRange(getParameterizedAttributeValue(root, "AXTextMarkerRangeForUIElement", elem))]
     d["lines"] = [
       strFromRange(getParameterizedAttributeValue(root, "AXLineTextMarkerRangeForTextMarker", nextMarker)),
       strFromRange(getParameterizedAttributeValue(root, "AXLeftLineTextMarkerRangeForTextMarker", nextMarker)),

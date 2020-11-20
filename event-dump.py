@@ -1,6 +1,6 @@
 from common import (elementToString, getAttributeValue, pythonifyValue,
                     getParameterizedAttributeValue, kEvents, dumpTree, kBasicAttributes,
-                    observeNotifications, findWebArea, getRootElement, elementPID)
+                    observeNotifications, findWebArea, getRootElement, elementPID, stopObserving, getAttributeNames)
 from pprint import pprint
 
 if __name__ == "__main__":
@@ -18,17 +18,17 @@ if __name__ == "__main__":
   if options.web:
     root = findWebArea(root)
 
-  webArea = findWebArea(root)
-
   # print(elementToString(webArea))
 
   def cb(element, notificationName, info):
+    # print("%s %s" % (notificationName, elementToString(element, getAttributeNames(element))))
     print("%s %s" % (notificationName, elementToString(element, kBasicAttributes + options.attribute)))
-    if notificationName == "AXSelectedTextChanged":
+    print(info)
+    if notificationName == "AXSelectedTextChanged" and info:
       selRange = info["AXSelectedTextMarkerRange"]
       string = getParameterizedAttributeValue(element, "AXStringForTextMarkerRange", selRange)
       # print("'%s'" % string)
-    elif notificationName == "AXLiveRegionChanged":
-      dumpTree(element)
+    elif notificationName == "foo":
+      dumpTree(element, max_depth=4)
 
   observeNotifications(root, options.event or kEvents, cb)

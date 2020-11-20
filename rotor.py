@@ -18,8 +18,8 @@ if __name__ == "__main__":
   root = findElem(getRootElement(name=options.app),
     lambda e: getAttributeValue(e, "AXRole") == "AXWebArea")
 
-  root = getAttributeValue(root, "AXChildren")[0]
-  root = getAttributeValue(root, "AXChildren")[0]
+  # root = getAttributeValue(root, "AXChildren")[0]
+  # root = getAttributeValue(root, "AXChildren")[0]
   # root = getAttributeValue(root, "AXChildren")[0]
   #  start_elem = getAttributeValue(root, "AXChildren")[0]
 

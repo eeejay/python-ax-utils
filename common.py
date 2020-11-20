@@ -10,6 +10,7 @@ from ApplicationServices import (AXObserverAddNotification, AXObserverCreateWith
                                  AXUIElementCopyParameterizedAttributeValue,
                                  AXUIElementCreateApplication, AXValueGetType,
                                  AXUIElementCopyActionNames,
+                                 AXUIElementSetAttributeValue,
                                  AXValueRef, kAXValueCFRangeType,
                                  kAXValueCGPointType, kAXValueCGRectType,
                                  kAXValueCGSizeType)
@@ -39,7 +40,7 @@ kEvents = ["AXMainWindowChanged", "AXFocusedWindowChanged",
     "AXSelectedChildrenChanged", "AXResized", "AXMoved", "AXCreated",
     "AXSelectedRowsChanged", "AXSelectedColumnsChanged", "AXSelectedTextChanged",
     "AXTitleChanged", "AXLayoutChanged", "AXAnnouncementRequested",
-    "AXLiveRegionChanged", "AXLiveRegionCreated"]
+    "AXLiveRegionChanged", "AXLiveRegionCreated", "AXLoadComplete", "AXNewDocumentLoadComplete", "AXLayoutComplete", "AXElementBusyChanged"]
 
 def valueToDict(val):
   ax_attr_type = AXValueGetType(val)
@@ -66,13 +67,13 @@ def getRootElement(pid=0, name=""):
 def getAttributeNames(elem):
   err, _attr = AXUIElementCopyAttributeNames(elem, None)
   attr = []
-  for attribute in _attr:
-    err, settable = AXUIElementIsAttributeSettable(elem, attribute, None)
-    if settable:
-      attr.append(attribute + "*")
-    else:
-      attr.append(attribute)
-  return attr
+  # for attribute in _attr:
+  #   err, settable = AXUIElementIsAttributeSettable(elem, attribute, None)
+  #   if settable:
+  #     attr.append(attribute + "*")
+  #   else:
+  #     attr.append(attribute)
+  return list(_attr) if _attr else []
 
 def getParameterizedAttributeNames(elem):
   err, attr = AXUIElementCopyParameterizedAttributeNames(elem, None)
@@ -88,7 +89,7 @@ def isAttributeSettable(elem, attribute):
 
 def getActions(elem):
   err, result = AXUIElementCopyActionNames(elem, None)
-  return result
+  return list(result) if result else []
 
 def getParameterizedAttributeValue(elem, attribute, parameter):
   err, attrValue = AXUIElementCopyParameterizedAttributeValue(elem, attribute, parameter, None)
@@ -141,12 +142,15 @@ def findElemWithDOMIdentifier(elem, identifier):
 
   return None
 
-def elementToString(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, cb=None):
+def elementToString(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, all_attributes=False, cb=None):
   # return elem
 
   roleDesc = getAttributeValue(elem, "AXRoleDescription") or "unknown"
-  pairs = ["%s=%s" % (attr, repr(pythonifyValue(getAttributeValue(elem, attr)))) for attr in attributes]
+  _attributes = attributes if not all_attributes else getAttributeNames(elem)
+  pairs = ["%s=%s" % (attr, repr(pythonifyValue(getAttributeValue(elem, attr)))) for attr in _attributes]
   ret = "%s (%d) %s" % (roleDesc, elementPID(elem), " ".join(pairs))
+  if actions:
+    ret += " %s" % repr(getActions(elem))
   if list_attributes:
     ret += " %s" % repr(getAttributeNames(elem))
   if list_param_attributes:
@@ -161,11 +165,13 @@ def elementPID(elem):
   except:
     return 0
 
-def dumpTree(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, indent=0, cb=None):
-  print("%s%s" % (indent * " ", elementToString(elem, attributes, actions, list_attributes, list_param_attributes, cb)))
+def dumpTree(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, all_attributes=False, indent=0, cb=None, max_depth=-1):
+  if max_depth == 0:
+    return
+  print("%s %s" % (indent * "+", elementToString(elem, attributes, actions, list_attributes, list_param_attributes, all_attributes, cb)))
   children = getAttributeValue(elem, "AXChildren") or []
   for child in children:
-    dumpTree(child, attributes, actions, list_attributes, list_param_attributes, indent + 1)
+    dumpTree(child, attributes, actions, list_attributes, list_param_attributes, all_attributes, indent + 1, cb, max_depth - 1)
 
 def handle_signals():
   def stop(cffd, cbt, info):
@@ -212,3 +218,5 @@ def observeNotifications(elem, notificationNames, callback, reactor=None):
     handle_signals()
     CFRunLoopRun()
 
+def stopObserving():
+  CFRunLoopStop(CFRunLoopGetCurrent())
