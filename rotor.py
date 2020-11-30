@@ -18,7 +18,7 @@ if __name__ == "__main__":
   root = findElem(getRootElement(name=options.app),
     lambda e: getAttributeValue(e, "AXRole") == "AXWebArea")
 
-  # root = getAttributeValue(root, "AXChildren")[0]
+  root = getAttributeValue(root, "AXChildren")[0]
   # root = getAttributeValue(root, "AXChildren")[0]
   # root = getAttributeValue(root, "AXChildren")[0]
   #  start_elem = getAttributeValue(root, "AXChildren")[0]
@@ -51,4 +51,4 @@ if __name__ == "__main__":
       "AXDirection": "AXDirectionPrevious" if options.previous else "AXDirectionNext"})
 
   for elem in (res or []):
-    print elementToString(elem, attributes=kBasicAttributes+["AXDOMIdentifier"])
+    print elementToString(elem, attributes=kBasicAttributes)
