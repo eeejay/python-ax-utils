@@ -76,6 +76,8 @@ if __name__ == "__main__":
     d["style"] = strFromRange(getParameterizedAttributeValue(root, "AXStyleTextMarkerRangeForTextMarker", nextMarker))
     expected.append(d)
 
+    print d
+
     nextMarker = getParameterizedAttributeValue(root, "AXNextTextMarkerForTextMarker", nextMarker)
 
-  print dictToJS(expected)
+  # print dictToJS(expected)

@@ -22,12 +22,20 @@ if __name__ == "__main__":
 
   def cb(element, notificationName, info):
     # print("%s %s" % (notificationName, elementToString(element, getAttributeNames(element))))
-    print("%s %s" % (notificationName, elementToString(element, kBasicAttributes + options.attribute)))
-    print(info)
+    print("==\n%s %s" % (notificationName, elementToString(element, kBasicAttributes + options.attribute, all_attributes=False, cb=lambda e: ["child count", len(getAttributeValue(e, "AXChildren") or [])], compact=True)))
     if notificationName == "AXSelectedTextChanged" and info:
-      selRange = info["AXSelectedTextMarkerRange"]
-      string = getParameterizedAttributeValue(element, "AXStringForTextMarkerRange", selRange)
-      # print("'%s'" % string)
+      print(info)
+      selRange = getAttributeValue(element, "AXSelectedTextMarkerRange")
+      startMarker = getParameterizedAttributeValue(element, "AXStartTextMarkerForTextMarkerRange", selRange)
+      # selLength = getParameterizedAttributeValue(element, "AXLengthForTextMarkerRange", selRange)
+      # fromStart = getParameterizedAttributeValue(element, "AXTextMarkerRangeForUnorderedTextMarkers",
+      #   [getAttributeValue(element, "AXStartTextMarker"), startMarker])
+      # strStartLength = getParameterizedAttributeValue(element, "AXStringForTextMarkerRange", fromStart)
+      # print("length %d from start: %s" % (selLength, strStartLength))
+#      prevMarker = getParameterizedAttributeValue(element, "AXPreviousTextMarkerForTextMarker", startMarker)
+      # el = getParameterizedAttributeValue(element, "AXUIElementForTextMarker", startMarker)
+      el = info["AXTextChangeElement"]
+      print("'%s'" % elementToString(el, kBasicAttributes + ["AXEditableAncestor", "AXFocusableAncestor"], compact=True))
     elif notificationName == "foo":
       dumpTree(element, max_depth=4)
 

@@ -29,16 +29,10 @@ if __name__ == "__main__":
   root = findElem(getRootElement(name=options.app),
     filter)
 
-  r = getAttributeValue(root, "AXSelectedTextMarkerRange");
-  print(strFromRange(r))
+  nextMarker = getAttributeValue(root, "AXStartTextMarker")
+  startMarker = nextMarker
 
-  # root = findElem(getRootElement(name=options.app),
-  #   lambda elem: getAttributeValue(elem, "AXDOMIdentifier") == "t")
 
-  # print(getAttributeValue(root, "AXSelectedText"))
-  # setAttributeValue(root, "AXValue", "olam")
-  # print(getAttributeValue(root, "AXSelectedText"))
-
-  # # setAttributeValue(root, "AXValue", "WUUT")
-  # print(getParameterizedAttributeValue(root, "AXRangeForLine", 1))
-  # print(getAttributeValue(root, "AXVisibleCharacterRange"))
+  while nextMarker:
+    print(strFromRange(getRange(startMarker, nextMarker)))
+    nextMarker = getParameterizedAttributeValue(root, "AXNextTextMarkerForTextMarker", nextMarker)

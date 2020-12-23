@@ -1,5 +1,7 @@
 import os
 import re
+import json
+from pprint import pformat
 
 from ApplicationServices import (AXObserverAddNotification, AXObserverCreateWithInfoCallback,
                                  AXObserverGetRunLoopSource, AXUIElementRef,
@@ -15,7 +17,7 @@ from ApplicationServices import (AXObserverAddNotification, AXObserverCreateWith
                                  kAXValueCGPointType, kAXValueCGRectType,
                                  kAXValueCGSizeType)
 from Cocoa import (NSArray, NSPointFromString, NSRangeFromString,
-                   NSRectFromString, NSSizeFromString, NSDictionary)
+                   NSRectFromString, NSSizeFromString, NSDictionary, NSURL)
 from objc import callbackFor, callbackPointer, pyobjc_unicode
 from Quartz import (CFFileDescriptorCreate,
                     CFFileDescriptorCreateRunLoopSource,
@@ -73,11 +75,11 @@ def getAttributeNames(elem):
   #     attr.append(attribute + "*")
   #   else:
   #     attr.append(attribute)
-  return list(_attr) if _attr else []
+  return sorted(list(_attr) if _attr else [])
 
 def getParameterizedAttributeNames(elem):
   err, attr = AXUIElementCopyParameterizedAttributeNames(elem, None)
-  return list(attr)
+  return sorted(list(attr))
 
 def getAttributeValue(elem, attribute):
   err, attrValue = AXUIElementCopyAttributeValue(elem, attribute, None)
@@ -89,7 +91,7 @@ def isAttributeSettable(elem, attribute):
 
 def getActions(elem):
   err, result = AXUIElementCopyActionNames(elem, None)
-  return list(result) if result else []
+  return sorted(list(result) if result else [])
 
 def getParameterizedAttributeValue(elem, attribute, parameter):
   err, attrValue = AXUIElementCopyParameterizedAttributeValue(elem, attribute, parameter, None)
@@ -104,6 +106,8 @@ def pythonifyValue(val):
   elif isinstance(val, NSDictionary):
     keys = list(val)
     return dict(zip(keys, [pythonifyValue(val[k]) for k in keys]))
+  elif isinstance(val, NSURL):
+    return str(val)
   elif isinstance(val, NSArray):
     return [pythonifyValue(v) for v in list(val)]
   elif isinstance(val, AXValueRef):
@@ -142,22 +146,29 @@ def findElemWithDOMIdentifier(elem, identifier):
 
   return None
 
-def elementToString(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, all_attributes=False, cb=None):
+def elementToObj(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, all_attributes=False, cb=None):
   # return elem
 
   roleDesc = getAttributeValue(elem, "AXRoleDescription") or "unknown"
   _attributes = attributes if not all_attributes else getAttributeNames(elem)
-  pairs = ["%s=%s" % (attr, repr(pythonifyValue(getAttributeValue(elem, attr)))) for attr in _attributes]
-  ret = "%s (%d) %s" % (roleDesc, elementPID(elem), " ".join(pairs))
+  obj = { "PID": elementPID(elem) }
+  obj["attributes"] = dict([(attr, pythonifyValue(getAttributeValue(elem, attr))) for attr in _attributes])
   if actions:
-    ret += " %s" % repr(getActions(elem))
+    obj["actions"] = getActions(elem)
   if list_attributes:
-    ret += " %s" % repr(getAttributeNames(elem))
+    obj["attributeNames"] = getAttributeNames(elem)
   if list_param_attributes:
-    ret += " %s" % repr(getParameterizedAttributeNames(elem))
+    obj["parameterizedAttributeNames"] = getParameterizedAttributeNames(elem)
   if cb:
-    ret += " %s" % cb(elem)
-  return ret
+    key, value = cb(elem)
+    obj[key] = value
+  return (roleDesc, obj)
+
+def elementToString(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, all_attributes=False, cb=None, compact=False):
+  obj = elementToObj(elem, attributes, actions, list_attributes, list_param_attributes, all_attributes, cb)
+  if compact:
+    return json.dumps(obj, sort_keys=True)
+  return pformat(obj)
 
 def elementPID(elem):
   try:
@@ -165,13 +176,14 @@ def elementPID(elem):
   except:
     return 0
 
-def dumpTree(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, all_attributes=False, indent=0, cb=None, max_depth=-1):
+def dumpTree(elem, attributes=kBasicAttributes, actions=False, list_attributes=False, list_param_attributes=False, all_attributes=False, indent=0, cb=None, max_depth=-1, compact=False):
   if max_depth == 0:
     return
-  print("%s %s" % (indent * "+", elementToString(elem, attributes, actions, list_attributes, list_param_attributes, all_attributes, cb)))
+  obj = elementToObj(elem, attributes, actions, list_attributes, list_param_attributes, all_attributes, cb)
+  print("%s %s" % (indent * "+", json.dumps(obj, indent=None if compact else indent+2, sort_keys=True)))
   children = getAttributeValue(elem, "AXChildren") or []
   for child in children:
-    dumpTree(child, attributes, actions, list_attributes, list_param_attributes, all_attributes, indent + 1, cb, max_depth - 1)
+    dumpTree(child, attributes, actions, list_attributes, list_param_attributes, all_attributes, indent + 1, cb, max_depth - 1, compact)
 
 def handle_signals():
   def stop(cffd, cbt, info):
