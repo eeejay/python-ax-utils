@@ -1,4 +1,5 @@
-from common import getRootElement, findWebArea, dumpTree, kBasicAttributes, findElem, getAttributeValue
+from common import elementToString, getRootElement, findWebArea, dumpTree, kBasicAttributes, findElem, getAttributeValue, getParameterizedAttributeValue, findElemWithDOMIdentifier
+from Cocoa import NSRangeFromString
 
 if __name__ == "__main__":
   from optparse import OptionParser
@@ -19,11 +20,15 @@ if __name__ == "__main__":
   root = getRootElement(name=options.app)
   if options.web:
     root = findWebArea(root)
+    if options.dom_identifier:
+      print options.dom_identifier
+      root = findElemWithDOMIdentifier(root, options.dom_identifier)
 
-  if options.dom_identifier:
-    root = findElem(root, lambda e: getAttributeValue(e, "AXDOMIdentifier") == options.dom_identifier)
 
   if root:
+    # c = getParameterizedAttributeValue(root, "AXCellForColumnAndRow", [0,0])
+    # print elementToString(root)
+    # print elementToString(c)
     dumpTree(root,
       kBasicAttributes + options.attribute,
       options.actions,

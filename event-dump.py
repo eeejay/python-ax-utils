@@ -22,7 +22,14 @@ if __name__ == "__main__":
 
   def cb(element, notificationName, info):
     # print("%s %s" % (notificationName, elementToString(element, getAttributeNames(element))))
-    print("==\n%s %s" % (notificationName, elementToString(element, kBasicAttributes + options.attribute, all_attributes=False, cb=lambda e: ["child count", len(getAttributeValue(e, "AXChildren") or [])], compact=True)))
+    print("\n==\n%s %s" % (notificationName, elementToString(element, kBasicAttributes + options.attribute, all_attributes=False, cb=lambda e: ["child count", len(getAttributeValue(e, "AXChildren") or [])], compact=True)))
+    parent = getAttributeValue(element, "AXParent")
+    while parent:
+      print "+" + elementToString(parent, kBasicAttributes + options.attribute)
+      parent = getAttributeValue(parent, "AXParent")
+    dumpTree(element, kBasicAttributes + options.attribute, max_depth=4)
+
+
     if notificationName == "AXSelectedTextChanged" and info:
       print(info)
       selRange = getAttributeValue(element, "AXSelectedTextMarkerRange")
@@ -34,9 +41,9 @@ if __name__ == "__main__":
       # print("length %d from start: %s" % (selLength, strStartLength))
 #      prevMarker = getParameterizedAttributeValue(element, "AXPreviousTextMarkerForTextMarker", startMarker)
       # el = getParameterizedAttributeValue(element, "AXUIElementForTextMarker", startMarker)
-      el = info["AXTextChangeElement"]
-      print("'%s'" % elementToString(el, kBasicAttributes + ["AXEditableAncestor", "AXFocusableAncestor"], compact=True))
-    elif notificationName == "foo":
-      dumpTree(element, max_depth=4)
+      # el = info["AXTextChangeElement"]
+      # print("'%s'" % elementToString(el, kBasicAttributes + ["AXEditableAncestor", "AXFocusableAncestor"], compact=True))
+    elif notificationName == "AXSelectedChildrenChanged":
+      dumpTree(element, kBasicAttributes + options.attribute, max_depth=4)
 
   observeNotifications(root, options.event or kEvents, cb)

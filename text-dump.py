@@ -8,7 +8,7 @@ root = None
 def strFromRange(r):
   if (not r):
     return ""
-  return getParameterizedAttributeValue(root, "AXStringForTextMarkerRange", r).encode('utf-8')
+  return getParameterizedAttributeValue(root, "AXAttributedStringForTextMarkerRange", r)
 
 def getMarker(index):
     return getParameterizedAttributeValue(root, "AXTextMarkerForIndex", index)
@@ -34,5 +34,6 @@ if __name__ == "__main__":
 
 
   while nextMarker:
-    print(strFromRange(getRange(startMarker, nextMarker)))
+    print()
+    print(repr(strFromRange(getRange(startMarker, nextMarker))))
     nextMarker = getParameterizedAttributeValue(root, "AXNextTextMarkerForTextMarker", nextMarker)

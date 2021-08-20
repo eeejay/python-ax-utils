@@ -69,13 +69,14 @@ def getRootElement(pid=0, name=""):
 def getAttributeNames(elem):
   err, _attr = AXUIElementCopyAttributeNames(elem, None)
   attr = []
-  # for attribute in _attr:
-  #   err, settable = AXUIElementIsAttributeSettable(elem, attribute, None)
-  #   if settable:
-  #     attr.append(attribute + "*")
-  #   else:
-  #     attr.append(attribute)
-  return sorted(list(_attr) if _attr else [])
+  if _attr:
+    for attribute in _attr:
+      err, settable = AXUIElementIsAttributeSettable(elem, attribute, None)
+      if settable:
+        attr.append(attribute + "*")
+      else:
+        attr.append(attribute)
+  return sorted(attr)
 
 def getParameterizedAttributeNames(elem):
   err, attr = AXUIElementCopyParameterizedAttributeNames(elem, None)
@@ -180,7 +181,8 @@ def dumpTree(elem, attributes=kBasicAttributes, actions=False, list_attributes=F
   if max_depth == 0:
     return
   obj = elementToObj(elem, attributes, actions, list_attributes, list_param_attributes, all_attributes, cb)
-  print("%s %s" % (indent * "+", json.dumps(obj, indent=None if compact else indent+2, sort_keys=True)))
+  s = "%s %s" % (indent * "+", json.dumps(obj, indent=None if compact else indent+2, sort_keys=True))
+  print(s)
   children = getAttributeValue(elem, "AXChildren") or []
   for child in children:
     dumpTree(child, attributes, actions, list_attributes, list_param_attributes, all_attributes, indent + 1, cb, max_depth - 1, compact)
