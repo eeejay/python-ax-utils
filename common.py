@@ -114,7 +114,7 @@ def pythonifyValue(val):
   elif isinstance(val, AXValueRef):
     return valueToDict(val);
   elif isinstance(val, AXUIElementRef):
-    return "<AXUIElement '%s'>" % getAttributeValue(val, "AXRoleDescription")
+    return "<AXUIElement '%s' '%s'>" % (getAttributeValue(val, "AXRoleDescription"), getAttributeValue(val, "AXValue"))
   elif repr(val).startswith("<AXTextMarkerRange "):
     return "<AXTextMarkerRange>"
   elif repr(val).startswith("<AXTextMarker "):
